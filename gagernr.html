@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gage R&R Study Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #4a69bd;
+            margin-bottom: 2rem;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 0.8rem;
+            text-align: center;
+        }
+        th {
+            background-color: #f8f9fa;
+        }
+        input[type="number"] {
+            width: 80px;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background-color: #ff6600;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #e65c00;
+        }
+        #results {
+            margin-top: 2rem;
+            padding: 2rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        .result-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            text-align: center;
+        }
+        .result-item {
+            background-color: #fff;
+            padding: 1rem;
+            border-radius: 5px;
+            border: 1px solid #e0e0e0;
+        }
+        .result-item h3 {
+            margin-top: 0;
+            color: #4a69bd;
+        }
+        pre {
+            background-color: #222;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            text-align: left;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .chart-label {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Gage R&R Study Tool</h1>
+    <p style="text-align: center;">This tool calculates the Repeatability and Reproducibility of a measurement system. Enter measurements from 3 operators, each measuring 10 parts, twice.</p>
+    
+    <h2>Data Input</h2>
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2">Part</th>
+                <th colspan="2">Operator 1</th>
+                <th colspan="2">Operator 2</th>
+                <th colspan="2">Operator 3</th>
+            </tr>
+            <tr>
+                <th>Trial 1</th>
+                <th>Trial 2</th>
+                <th>Trial 1</th>
+                <th>Trial 2</th>
+                <th>Trial 1</th>
+                <th>Trial 2</th>
+            </tr>
+        </thead>
+        <tbody id="data-table-body">
+            </tbody>
+    </table>
+    <button onclick="calculateGageRR()">Calculate Gage R&R</button>
+    
+    <div id="results" style="display: none;">
+        <h2>Gage R&R Results</h2>
+        <div class="result-box">
+            <div class="result-item">
+                <h3>Equipment Variation (EV)</h3>
+                <p id="ev-value"></p>
+            </div>
+            <div class="result-item">
+                <h3>Appraiser Variation (AV)</h3>
+                <p id="av-value"></p>
+            </div>
+            <div class="result-item">
+                <h3>Part Variation (PV)</h3>
+                <p id="pv-value"></p>
+            </div>
+            <div class="result-item">
+                <h3>Total Gage R&R</h3>
+                <p id="grr-value"></p>
+            </div>
+        </div>
+        <div style="margin-top: 2rem;">
+            <h2>X-Bar Chart</h2>
+            <p style="text-align: center; font-style: italic;">(Average of each part by each operator)</p>
+            <pre id="xbar-chart"></pre>
+        </div>
+        <div style="margin-top: 2rem;">
+            <h2>R-Chart</h2>
+            <p style="text-align: center; font-style: italic;">(Range of each operator's trials)</p>
+            <pre id="r-chart"></pre>
+        </div>
+    </div>
+</div>
+
+<script>
+    const numberOfParts = 10;
+    const numberOfOperators = 3;
+    const numberOfTrials = 2;
+    const D4 = 1.88; // Constant for R-chart (n=2, number of trials)
+    const d2 = 1.128; // Constant for EV calculation (n=2)
+    const K1 = 0.8862; // Constant for EV (from standard tables, a=3 operators, n=2 trials)
+    const K2 = 0.5908; // Constant for AV (from standard tables, n=10 parts)
+
+    // Function to generate the table rows dynamically
+    document.addEventListener('DOMContentLoaded', () => {
+        const tableBody = document.getElementById('data-table-body');
+        for (let i = 1; i <= numberOfParts; i++) {
+            let row = `<tr><td>Part ${i}</td>`;
+            for (let j = 1; j <= numberOfOperators; j++) {
+                row += `<td><input type="number" step="any" id="op${j}-part${i}-trial1"></td>`;
+                row += `<td><input type="number" step="any" id="op${j}-part${i}-trial2"></td>`;
+            }
+            row += '</tr>';
+            tableBody.innerHTML += row;
+        }
+    });
+
+    function calculateGageRR() {
+        const data = [];
+        for (let i = 1; i <= numberOfOperators; i++) {
+            const operatorData = [];
+            for (let j = 1; j <= numberOfParts; j++) {
+                const trial1 = parseFloat(document.getElementById(`op${i}-part${j}-trial1`).value);
+                const trial2 = parseFloat(document.getElementById(`op${i}-part${j}-trial2`).value);
+                if (isNaN(trial1) || isNaN(trial2)) {
+                    alert('Please fill out all fields with numeric values.');
+                    return;
+                }
+                operatorData.push([trial1, trial2]);
+            }
+            data.push(operatorData);
+        }
+
+        // Calculations
+        // Calculate ranges for each operator
+        const operatorRanges = data.map(opData => opData.map(partData => Math.abs(partData[0] - partData[1])));
+
+        // Calculate Average Range (R-bar)
+        const R_bar = operatorRanges.flat().reduce((sum, val) => sum + val, 0) / (numberOfOperators * numberOfParts);
+
+        // Calculate Average of Averages (X-double-bar) for each operator
+        const opAverages = data.map(opData => opData.map(partData => (partData[0] + partData[1]) / 2));
+        const opAverage_bar = opAverages.map(opAvg => opAvg.reduce((sum, val) => sum + val, 0) / numberOfParts);
+        const X_double_bar = opAverage_bar.reduce((sum, val) => sum + val, 0) / numberOfOperators;
+
+        // Calculate Range of Averages (R_avg)
+        const R_avg = Math.max(...opAverage_bar) - Math.min(...opAverage_bar);
+
+        // Calculate Equipment Variation (EV)
+        const EV = R_bar * K1;
+
+        // Calculate Appraiser Variation (AV)
+        const AV = Math.sqrt(Math.max(0, (R_avg * K2)**2 - (EV**2 / (numberOfParts * numberOfOperators))));
+
+        // Calculate Part Variation (PV)
+        const partAverages = [];
+        for (let i = 0; i < numberOfParts; i++) {
+            let sum = 0;
+            for (let j = 0; j < numberOfOperators; j++) {
+                sum += (data[j][i][0] + data[j][i][1]) / 2;
+            }
+            partAverages.push(sum / numberOfOperators);
+        }
+        const PV_range = Math.max(...partAverages) - Math.min(...partAverages);
+        const PV = PV_range / d2;
+
+        // Calculate Total Gage R&R
+        const GRR = Math.sqrt(AV**2 + EV**2);
+
+        // Calculate Total Variation (TV)
+        const TV = Math.sqrt(GRR**2 + PV**2);
+
+        // Display results
+        document.getElementById('ev-value').textContent = EV.toFixed(4);
+        document.getElementById('av-value').textContent = AV.toFixed(4);
+        document.getElementById('pv-value').textContent = PV.toFixed(4);
+        document.getElementById('grr-value').textContent = GRR.toFixed(4);
+        document.getElementById('results').style.display = 'block';
+
+        // --- Create Text-based Charts ---
+        const xbarChart = document.getElementById('xbar-chart');
+        xbarChart.innerHTML = '';
+        let xbarOutput = "X-Bar Chart (Part Averages by Operator)\n\n";
+        xbarOutput += "             Op 1        Op 2        Op 3\n";
+        xbarOutput += "----------------------------------------------\n";
+        for (let i = 0; i < numberOfParts; i++) {
+            let row = `Part ${String(i+1).padStart(2, ' ')} |`;
+            for (let j = 0; j < numberOfOperators; j++) {
+                row += `  ${opAverages[j][i].toFixed(2).padStart(8, ' ')}`;
+            }
+            xbarOutput += row + '\n';
+        }
+        xbarOutput += "\n\n";
+        xbarChart.textContent = xbarOutput;
+        
+        const rChart = document.getElementById('r-chart');
+        rChart.innerHTML = '';
+        let rChartOutput = "R-Chart (Trial Ranges by Operator)\n\n";
+        rChartOutput += "             Op 1        Op 2        Op 3\n";
+        rChartOutput += "----------------------------------------------\n";
+        for (let i = 0; i < numberOfParts; i++) {
+            let row = `Part ${String(i+1).padStart(2, ' ')} |`;
+            for (let j = 0; j < numberOfOperators; j++) {
+                row += `  ${operatorRanges[j][i].toFixed(2).padStart(8, ' ')}`;
+            }
+            rChartOutput += row + '\n';
+        }
+        rChart.textContent = rChartOutput;
+    }
+</script>
+
+</body>
+</html>

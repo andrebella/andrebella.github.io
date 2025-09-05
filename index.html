@@ -28,7 +28,62 @@
     header {background:#111; color:#fff; padding:3rem 2rem; text-align:center;}
     header h1 {font-size:2.5rem; margin:0 0 1rem;}
     header p {font-size:1.2rem; max-width:700px; margin:0 auto 1.5rem;}
-    header a {display:inline-block; background:#ff6600; color:#fff; padding:0.8rem 1.5rem; border-radius:5px; text-decoration:none; font-weight:bold;}
+    header a {display:inline-block; background:#ff6600; color:#fff; padding:0.8rem 1.5rem; border-radius:5px; text-decoration:none; font-weight:bold; margin: 0 0.5rem;}
+    
+    /* Dropdown Button */
+    .dropbtn {
+      background-color: #ff6600;
+      color: white;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-radius: 5px;
+    }
+    
+    /* The container <div> - needed to position the dropdown content */
+    .dropdown {
+      position: relative;
+      display: inline-block;
+      margin: 0 0.5rem;
+    }
+    
+    /* Dropdown Content (Hidden by Default) */
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      min-width: 250px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+      border-radius: 5px;
+      top: 100%; /* Positions the menu directly below the button */
+    }
+    
+    /* Links inside the dropdown */
+    .dropdown-content a {
+      color: #111;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+      font-weight: normal;
+      background-color: #f9f9f9;
+      margin: 0;
+      border-radius: 0;
+    }
+    
+    /* Change color of dropdown links on hover */
+    .dropdown-content a:hover {
+      background-color: #e6e6e6;
+    }
+    
+    /* Show the dropdown menu on hover */
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
     section {padding:3rem 2rem; max-width:1000px; margin:auto;}
     section h2 {font-size:2rem; margin-bottom:1rem; color:#111;}
     .grid {display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:1.5rem;}
@@ -92,7 +147,16 @@
     <h1>Turning Manufacturing Bottlenecks into Profit</h1>
     <p>I help factories in Mexico, China, Vietnam and beyond cut downtime, boost throughput, and scale smarter — without burning money on consultants who never touched a shop floor. This includes providing project visibility to keep your team aligned.</p>
     <a href="#contact">Book a Diagnostic Call</a>
-    <a href="dashboard.html">Sample Dashboard      </a>
+    <a href="dashboard.html">Sample Dashboard</a>
+    <div class="dropdown">
+      <button class="dropbtn">Six Sigma Tools</button>
+      <div class="dropdown-content">
+        <a href="fishbone.html">Ishikawa (Fishbone) Diagram</a>
+        <a href="projectcharter.html">Project Charter</a>
+        <a href="pareto.html">Pareto Chart</a>
+        <a href="gagernr.html">Gage R&R</a>
+      </div>
+    </div>
   </header>
 
   <section>

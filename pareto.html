@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pareto Chart Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1, h2 {
+            text-align: center;
+            color: #4a69bd;
+            margin-bottom: 1rem;
+        }
+        p.intro {
+            text-align: center;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .input-form {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .input-form label {
+            font-weight: bold;
+        }
+        .input-form textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+            font-family: monospace;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background-color: #ff6600;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #e65c00;
+        }
+        #results {
+            margin-top: 2rem;
+            padding: 2rem;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1rem;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 0.8rem;
+            text-align: left;
+        }
+        th {
+            background-color: #e6f0ff;
+        }
+        pre {
+            background-color: #222;
+            color: #fff;
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            text-align: left;
+            font-family: monospace;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            line-height: 1.2;
+            font-size: 0.8rem;
+        }
+        .chart-label {
+            text-align: center;
+            font-weight: bold;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Pareto Chart Tool</h1>
+    <p class="intro">The Pareto Chart helps you focus on the "vital few" problems that are causing the "trivial many" issues. It's based on the 80/20 rule, allowing you to prioritize your improvement efforts for the biggest impact.</p>
+    
+    <div class="input-form">
+        <label for="dataInput">Enter Problems and Frequencies (one per line, separated by a comma)</label>
+        <textarea id="dataInput" rows="10" placeholder="Example:&#10;Scratched parts, 120&#10;Misaligned components, 75&#10;Incorrect labels, 40&#10;Wrong color, 25&#10;Damaged packaging, 10"></textarea>
+        <button onclick="generateParetoChart()">Generate Pareto Chart</button>
+    </div>
+    
+    <div id="results" style="display: none;">
+        <h2>Results Table</h2>
+        <table id="resultsTable">
+            <thead>
+                <tr>
+                    <th>Problem</th>
+                    <th>Frequency</th>
+                    <th>Percentage (%)</th>
+                    <th>Cumulative Percentage (%)</th>
+                </tr>
+            </thead>
+            <tbody>
+                </tbody>
+        </table>
+
+        <div class="chart-label">Pareto Chart</div>
+        <pre id="paretoChart"></pre>
+    </div>
+</div>
+
+<script>
+    function generateParetoChart() {
+        const dataInput = document.getElementById('dataInput').value;
+        const lines = dataInput.trim().split('\n');
+        
+        if (lines.length === 0 || dataInput.trim() === '') {
+            alert('Please enter data to generate the chart.');
+            return;
+        }
+
+        const problems = [];
+        let totalFrequency = 0;
+
+        for (const line of lines) {
+            const parts = line.split(',');
+            if (parts.length === 2) {
+                const problem = parts[0].trim();
+                const frequency = parseInt(parts[1].trim());
+                if (!isNaN(frequency)) {
+                    problems.push({ problem, frequency });
+                    totalFrequency += frequency;
+                }
+            }
+        }
+
+        if (problems.length === 0) {
+            alert('Invalid data format. Please use "Problem, Frequency" per line.');
+            return;
+        }
+
+        // Sort problems by frequency in descending order
+        problems.sort((a, b) => b.frequency - a.frequency);
+
+        // Calculate percentages and cumulative percentages
+        let cumulativePercentage = 0;
+        problems.forEach(p => {
+            p.percentage = (p.frequency / totalFrequency) * 100;
+            cumulativePercentage += p.percentage;
+            p.cumulativePercentage = cumulativePercentage;
+        });
+
+        // Display results in a table
+        const tableBody = document.getElementById('resultsTable').getElementsByTagName('tbody')[0];
+        tableBody.innerHTML = '';
+        problems.forEach(p => {
+            const row = tableBody.insertRow();
+            row.insertCell(0).textContent = p.problem;
+            row.insertCell(1).textContent = p.frequency;
+            row.insertCell(2).textContent = p.percentage.toFixed(2);
+            row.insertCell(3).textContent = p.cumulativePercentage.toFixed(2);
+        });
+
+        // Create a text-based Pareto chart
+        const paretoChart = document.getElementById('paretoChart');
+        paretoChart.textContent = '';
+        let chartOutput = "Problem                       | Frequency | Bar               | Cumulative %\n";
+        chartOutput += "------------------------------+-----------+-------------------+--------------\n";
+        
+        problems.forEach(p => {
+            const barLength = Math.floor(p.percentage / 5);
+            const bar = "█".repeat(barLength).padEnd(20, ' ');
+            const paddedProblem = p.problem.padEnd(29, ' ').substring(0, 29);
+            chartOutput += `${paddedProblem}| ${String(p.frequency).padStart(9, ' ')} | ${bar}| ${p.cumulativePercentage.toFixed(2).padStart(12, ' ')}\n`;
+        });
+        
+        paretoChart.textContent = chartOutput;
+        document.getElementById('results').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>

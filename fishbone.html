@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ishikawa (Fishbone) Diagram Tool</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #4a69bd;
+        }
+        .intro {
+            text-align: center;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .input-form {
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background-color: #ff6600;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #e65c00;
+        }
+        .ishikawa-diagram {
+            position: relative;
+            height: 500px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .main-line {
+            position: absolute;
+            top: 50%;
+            left: 5%;
+            width: 90%;
+            height: 4px;
+            background-color: #333;
+            transform: translateY(-50%);
+        }
+        .problem-statement {
+            position: absolute;
+            top: 50%;
+            right: 1%;
+            transform: translateY(-50%);
+            background-color: #4a69bd;
+            color: #fff;
+            padding: 1rem 2rem;
+            border-radius: 5px;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+        .category {
+            position: absolute;
+            width: 300px;
+            text-align: center;
+        }
+        .category-line {
+            position: absolute;
+            height: 100px;
+            width: 4px;
+            background-color: #333;
+            transform-origin: bottom center;
+        }
+        .category-line.top-left {
+            transform: rotate(-45deg);
+        }
+        .category-line.top-right {
+            transform: rotate(-135deg);
+        }
+        .category-line.bottom-left {
+            transform: rotate(45deg);
+        }
+        .category-line.bottom-right {
+            transform: rotate(135deg);
+        }
+        .category-name {
+            position: absolute;
+            font-weight: bold;
+            font-size: 1.1rem;
+            color: #111;
+        }
+        .causes-list {
+            position: absolute;
+            width: 250px;
+            list-style: none;
+            padding: 0;
+            font-size: 0.9rem;
+            text-align: left;
+        }
+        /* Positions for the top categories */
+        #cat-man { top: 12%; left: 10%; }
+        #cat-machine { top: 12%; left: 35%; }
+        #cat-method { top: 12%; left: 60%; }
+        #cat-man .category-line { top: 85px; left: 135px; }
+        #cat-machine .category-line { top: 85px; left: 135px; }
+        #cat-method .category-line { top: 85px; left: 135px; }
+        #cat-man .causes-list { top: -20px; left: 15px; }
+        #cat-machine .causes-list { top: -20px; left: 15px; }
+        #cat-method .causes-list { top: -20px; left: 15px; }
+        #cat-man .category-name { top: -20px; left: 105px; }
+        #cat-machine .category-name { top: -20px; left: 105px; }
+        #cat-method .category-name { top: -20px; left: 105px; }
+
+        /* Positions for the bottom categories */
+        #cat-material { bottom: 12%; left: 10%; }
+        #cat-measurement { bottom: 12%; left: 35%; }
+        #cat-motherNature { bottom: 12%; left: 60%; }
+        #cat-material .category-line { bottom: 85px; left: 135px; }
+        #cat-measurement .category-line { bottom: 85px; left: 135px; }
+        #cat-motherNature .category-line { bottom: 85px; left: 135px; }
+        #cat-material .causes-list { bottom: -20px; left: 15px; }
+        #cat-measurement .causes-list { bottom: -20px; left: 15px; }
+        #cat-motherNature .causes-list { bottom: -20px; left: 15px; }
+        #cat-material .category-name { bottom: -20px; left: 105px; }
+        #cat-measurement .category-name { bottom: -20px; left: 105px; }
+        #cat-motherNature .category-name { bottom: -20px; left: 105px; }
+        
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Ishikawa (Fishbone) Diagram Tool</h1>
+    <p class="intro">Use this tool to brainstorm and visualize the potential root causes of a quality problem in a structured way. This is a key tool in the Analyze phase of Six Sigma.</p>
+
+    <div class="input-form">
+        <div class="form-group">
+            <label for="problemStatement">Problem Statement (The Effect)</label>
+            <input type="text" id="problemStatement" placeholder="e.g., 'High Rate of Product Defects' or 'Late Shipments'">
+        </div>
+        <hr>
+        <h2>Potential Causes (The 6 Ms)</h2>
+        <div class="form-group">
+            <label for="manCauses">Man (People):</label>
+            <textarea id="manCauses" placeholder="Enter causes related to people, separated by a new line."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="machineCauses">Machine (Equipment):</label>
+            <textarea id="machineCauses" placeholder="Enter causes related to equipment, separated by a new line."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="methodCauses">Method (Process):</label>
+            <textarea id="methodCauses" placeholder="Enter causes related to the process, separated by a new line."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="materialCauses">Material (Components):</label>
+            <textarea id="materialCauses" placeholder="Enter causes related to raw materials, separated by a new line."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="measurementCauses">Measurement (Inspection):</label>
+            <textarea id="measurementCauses" placeholder="Enter causes related to measurement, separated by a new line."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="motherNatureCauses">Mother Nature (Environment):</label>
+            <textarea id="motherNatureCauses" placeholder="Enter causes related to the environment, separated by a new line."></textarea>
+        </div>
+        <button onclick="updateDiagram()">Update Diagram</button>
+    </div>
+
+    <div class="ishikawa-diagram">
+        <div class="main-line"></div>
+        <div class="problem-statement" id="diagram-problem">Problem Statement</div>
+
+        <div class="category" id="cat-man">
+            <div class="category-line top-left"></div>
+            <div class="category-name">Man</div>
+            <ul class="causes-list" id="list-man"></ul>
+        </div>
+        <div class="category" id="cat-machine">
+            <div class="category-line top-right"></div>
+            <div class="category-name">Machine</div>
+            <ul class="causes-list" id="list-machine"></ul>
+        </div>
+        <div class="category" id="cat-method">
+            <div class="category-line top-left"></div>
+            <div class="category-name">Method</div>
+            <ul class="causes-list" id="list-method"></ul>
+        </div>
+        
+        <div class="category" id="cat-material">
+            <div class="category-line bottom-left"></div>
+            <div class="category-name">Material</div>
+            <ul class="causes-list" id="list-material"></ul>
+        </div>
+        <div class="category" id="cat-measurement">
+            <div class="category-line bottom-right"></div>
+            <div class="category-name">Measurement</div>
+            <ul class="causes-list" id="list-measurement"></ul>
+        </div>
+        <div class="category" id="cat-motherNature">
+            <div class="category-line bottom-left"></div>
+            <div class="category-name">Mother Nature</div>
+            <ul class="causes-list" id="list-motherNature"></ul>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    function updateDiagram() {
+        const problemStatement = document.getElementById('problemStatement').value || 'Problem Statement';
+        document.getElementById('diagram-problem').textContent = problemStatement;
+
+        const categories = {
+            man: 'manCauses',
+            machine: 'machineCauses',
+            method: 'methodCauses',
+            material: 'materialCauses',
+            measurement: 'measurementCauses',
+            motherNature: 'motherNatureCauses'
+        };
+
+        for (const key in categories) {
+            const causesText = document.getElementById(categories[key]).value;
+            const causeList = document.getElementById(`list-${key}`);
+            causeList.innerHTML = '';
+            
+            const causes = causesText.split('\n').filter(cause => cause.trim() !== '');
+            causes.forEach(cause => {
+                const li = document.createElement('li');
+                li.textContent = cause.trim();
+                causeList.appendChild(li);
+            });
+        }
+    }
+</script>
+
+</body>
+</html>

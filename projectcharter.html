@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Six Sigma Project Charter Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            color: #333;
+            line-height: 1.6;
+            margin: 0;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #4a69bd;
+            margin-bottom: 2rem;
+        }
+        h2 {
+            color: #4a69bd;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+        input[type="text"], textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 1rem;
+        }
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            background-color: #ff6600;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #e65c00;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Six Sigma Project Charter</h1>
+    <p>Use this form to define the scope and goals of your manufacturing improvement project. This document serves as the foundation for your project and ensures alignment with all stakeholders.</p>
+
+    <form id="pdfForm">
+        <h2>1. Project Identification</h2>
+        <div class="form-group">
+            <label for="projectName">Project Name</label>
+            <input type="text" id="projectName" name="projectName" required>
+        </div>
+        <div class="form-group">
+            <label for="projectManager">Project Leader</label>
+            <input type="text" id="projectManager" name="projectManager" required>
+        </div>
+
+        <h2>2. Business Case & Problem Statement</h2>
+        <div class="form-group">
+            <label for="businessCase">Business Case (Why is this project important?)</label>
+            <textarea id="businessCase" name="businessCase" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="problemStatement">Problem Statement (What is the specific problem to be solved?)</label>
+            <textarea id="problemStatement" name="problemStatement" required></textarea>
+        </div>
+
+        <h2>3. Goals & Scope</h2>
+        <div class="form-group">
+            <label for="projectGoal">Project Goal (What is the target for improvement?)</label>
+            <textarea id="projectGoal" name="projectGoal" required></textarea>
+        </div>
+        <div class="form-group">
+            <label for="projectScope">Project Scope (What is in scope and out of scope?)</label>
+            <textarea id="projectScope" name="projectScope" required></textarea>
+        </div>
+        <button type="button" onclick="generatePDF()">Generate Project Charter PDF</button>
+    </form>
+</div>
+
+<script>
+    window.jsPDF = window.jspdf.jsPDF;
+
+    function generatePDF() {
+        const doc = new jsPDF();
+        
+        const projectName = document.getElementById('projectName').value;
+        const projectManager = document.getElementById('projectManager').value;
+        const businessCase = document.getElementById('businessCase').value;
+        const problemStatement = document.getElementById('problemStatement').value;
+        const projectGoal = document.getElementById('projectGoal').value;
+        const projectScope = document.getElementById('projectScope').value;
+
+        // Set up the document content
+        doc.setFontSize(22);
+        doc.text("Six Sigma Project Charter", 105, 20, null, null, "center");
+
+        let yOffset = 40;
+
+        // Project Identification
+        doc.setFontSize(16);
+        doc.text("1. Project Identification", 20, yOffset);
+        yOffset += 10;
+        doc.setFontSize(12);
+        doc.text(`Project Name: ${projectName}`, 20, yOffset);
+        yOffset += 10;
+        doc.text(`Project Leader: ${projectManager}`, 20, yOffset);
+
+        // Business Case
+        yOffset += 20;
+        doc.setFontSize(16);
+        doc.text("2. Business Case & Problem Statement", 20, yOffset);
+        yOffset += 10;
+        doc.setFontSize(12);
+        const businessCaseText = doc.splitTextToSize(`Business Case: ${businessCase}`, 170);
+        doc.text(businessCaseText, 20, yOffset);
+        yOffset += (businessCaseText.length * 7) + 5;
+        const problemStatementText = doc.splitTextToSize(`Problem Statement: ${problemStatement}`, 170);
+        doc.text(problemStatementText, 20, yOffset);
+
+        // Goals & Scope
+        yOffset += (problemStatementText.length * 7) + 15;
+        doc.setFontSize(16);
+        doc.text("3. Goals & Scope", 20, yOffset);
+        yOffset += 10;
+        doc.setFontSize(12);
+        const projectGoalText = doc.splitTextToSize(`Project Goal: ${projectGoal}`, 170);
+        doc.text(projectGoalText, 20, yOffset);
+        yOffset += (projectGoalText.length * 7) + 5;
+        const projectScopeText = doc.splitTextToSize(`Project Scope: ${projectScope}`, 170);
+        doc.text(projectScopeText, 20, yOffset);
+        
+        // Save the PDF with a dynamic filename
+        const filename = `${projectName.replace(/\s/g, '_')}_Project_Charter.pdf`;
+        doc.save(filename);
+    }
+</script>
+
+</body>
+</html>
