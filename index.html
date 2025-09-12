@@ -273,7 +273,7 @@
     <p>Email: <a href="mailto:contact@andrebella.com">contact@andrebella.com</a></p>
     <p>Add to calendar: <a href="https://calendly.com/andrebellapro/20-minute-meeting">https://calendly.com/andrebellapro/20-minute-meeting</a></p>
     <button id="n8n-status-button">
-      n8n status: <span id="status-light" class="offline"></span>
+      Dashboard: <span id="status-light" class="offline"></span>
     </button>
   </section>
 
@@ -283,8 +283,8 @@
   
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const n8nUrl = 'https://n8n.andrebella.com/';
         const statusLight = document.getElementById('status-light');
+        const n8nUrl = 'https://' + window.location.hostname + '/';
 
         async function checkN8nStatus() {
             try {
@@ -306,10 +306,7 @@
             }
         }
 
-        // Check status immediately on page load
         checkN8nStatus();
-
-        // Optional: Check status every 60 seconds
         setInterval(checkN8nStatus, 60000);
     });
   </script>
