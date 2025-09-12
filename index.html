@@ -28,7 +28,18 @@
     header {background:#111; color:#fff; padding:3rem 2rem; text-align:center;}
     header h1 {font-size:2.5rem; margin:0 0 1rem;}
     header p {font-size:1.2rem; max-width:700px; margin:0 auto 1.5rem;}
-    header a {display:inline-block; background:#ff6600; color:#fff; padding:0.8rem 1.5rem; border-radius:5px; text-decoration:none; font-weight:bold; margin: 0 0.5rem;}
+    
+    /* Original header button styles */
+    header a {
+      display: inline-block;
+      background: #ff6600;
+      color: #fff;
+      padding: 0.8rem 1.5rem;
+      border-radius: 5px;
+      text-decoration: none;
+      font-weight: bold;
+      margin: 0 0.5rem;
+    }
     
     /* Dropdown Button */
     .dropbtn {
@@ -58,7 +69,7 @@
       box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
       z-index: 1;
       border-radius: 5px;
-      top: 100%; /* Positions the menu directly below the button */
+      top: 100%;
     }
     
     /* Links inside the dropdown */
@@ -140,6 +151,35 @@
     }
     footer {text-align:center; padding:2rem; background:#111; color:#aaa;}
     footer a {color:#ff6600; text-decoration:none; font-weight:bold;}
+
+    /* N8N status button style in its new location */
+    #n8n-status-button {
+      margin-top: 1rem;
+      background-color: #f0f0f0;
+      color: #222;
+      padding: 0.8rem 1.5rem;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+    #status-light {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-left: 8px;
+      background-color: gray;
+    }
+    #status-light.online {
+      background-color: green;
+    }
+    #status-light.offline {
+      background-color: red;
+    }
   </style>
 </head>
 <body>
@@ -232,10 +272,46 @@
     <p>Ready to cut waste and scale smarter? Book a free 20-min call.</p>
     <p>Email: <a href="mailto:contact@andrebella.com">contact@andrebella.com</a></p>
     <p>Add to calendar: <a href="https://calendly.com/andrebellapro/20-minute-meeting">https://calendly.com/andrebellapro/20-minute-meeting</a></p>
+    <button id="n8n-status-button">
+      n8n status: <span id="status-light" class="offline"></span>
+    </button>
   </section>
 
   <footer>
     <p>&copy; 2025 Andre Bella. All rights reserved.</p>
   </footer>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const n8nUrl = 'https://n8n.andrebella.com/';
+        const statusLight = document.getElementById('status-light');
+
+        async function checkN8nStatus() {
+            try {
+                const response = await fetch(n8nUrl, {
+                    method: 'GET',
+                    mode: 'cors',
+                    cache: 'no-cache'
+                });
+
+                if (response.ok) {
+                    statusLight.classList.remove('offline');
+                    statusLight.classList.add('online');
+                } else {
+                    throw new Error('Server responded with an error');
+                }
+            } catch (error) {
+                statusLight.classList.remove('online');
+                statusLight.classList.add('offline');
+            }
+        }
+
+        // Check status immediately on page load
+        checkN8nStatus();
+
+        // Optional: Check status every 60 seconds
+        setInterval(checkN8nStatus, 60000);
+    });
+  </script>
 </body>
 </html>
